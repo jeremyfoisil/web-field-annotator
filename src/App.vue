@@ -53,8 +53,9 @@ function closeLog() {
 }
 
 function onSaved() {
+  // On ne force pas l'ouverture du volet (gênant sur mobile) : on ferme juste
+  // le formulaire et on laisse le volet dans l'état choisi par l'utilisateur.
   closeLog()
-  showSidebar.value = true
 }
 
 function openDownload() {
