@@ -56,12 +56,12 @@ function title(o: { point: [number, number] }): string {
         <h2>Observations loggées</h2>
         <span class="count">{{ observations.items.length }} observation(s)</span>
       </div>
-      <button class="btn small" @click="emit('open-download')" title="Télécharger une zone hors ligne">
-        ⭳ Zone offline
-      </button>
     </div>
 
     <div class="tools">
+      <button class="btn primary offline-btn" @click="emit('open-download')">
+        ⭳ Télécharger la carto hors ligne
+      </button>
       <div class="export-row">
         <button
           class="btn ghost small"
@@ -133,6 +133,7 @@ function title(o: { point: [number, number] }): string {
 h2 { margin: 0; font-size: 1rem; }
 .count { font-size: 0.78rem; color: var(--muted); }
 .tools { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.offline-btn { width: 100%; margin-bottom: 10px; }
 .export-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .export-row .btn { flex: 1 1 auto; white-space: nowrap; }
 .import-msg { margin: 8px 0 0; font-size: 0.78rem; color: var(--accent); }

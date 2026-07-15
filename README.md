@@ -1,8 +1,7 @@
 # Field Annotator — Kermap
 
 PWA mobile/tablette pour ingénieurs terrain : consultation d'orthophotographies
-et du flux **Nimbo** **hors ligne**, et logging de points d'observation
-directement depuis la carte.
+IGN **hors ligne**, et logging de points d'observation directement depuis la carte.
 
 ## Fonctionnalités
 
@@ -10,7 +9,7 @@ directement depuis la carte.
 - **Orientation** : sur smartphone, un cône « faisceau » indique la direction
   regardée (boussole via l'API DeviceOrientation), affiché sur le point de position
   quand la géolocalisation est active.
-- **Couches raster** : Ortho IGN (Géoplateforme), flux Nimbo, plan IGN — activables/désactivables.
+- **Couches raster** : Ortho IGN (Géoplateforme), plan IGN.
 - **Mode hors ligne** : pré-téléchargement des tuiles d'une zone pendant qu'on est
   connecté, puis consultation intégrale sans réseau.
 - **Logging d'observations** : tap sur la carte → enregistrement d'un point
@@ -52,9 +51,6 @@ npm run preview   # sert le build (PWA active)
 
 ## À compléter avant mise en production
 
-- **URL du flux Nimbo** : renseigner le vrai endpoint XYZ/WMTS dans
-  `src/config/layers.ts` (entrée `id: 'nimbo'`), puis ajouter son hôte dans le
-  `runtimeCaching` de `vite.config.ts` pour que le cache offline le prenne en charge.
 - **Icônes PWA** : `public/icon.svg` / `public/favicon.svg` reprennent le logo Kermap.
 
 ## Architecture
