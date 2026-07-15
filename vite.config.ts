@@ -1,0 +1,77 @@
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import { VitePWA } from 'vite-plugin-pwa'
+
+// NOTE offline : les tuiles (ortho IGN, flux Nimbo) et l'API cadastre sont mises
+// en cache par le service worker en stratégie CacheFirst. Le pré-téléchargement
+// d'une zone (voir src/lib/offline.ts) déclenche un fetch() de chaque tuile, ce
+// qui remplit ce même cache — donc hors ligne la carte s'affiche depuis le cache.
+//
+// Quand tu renseignes l'URL réelle du flux Nimbo dans src/config/layers.ts,
+// ajoute son hôte dans `tileRuntimeCaching` ci-dessous.
+
+// GitHub Pages projet : le site est servi sous https://<org>.github.io/<repo>/
+const base = '/web-field-annotator/'
+
+export default defineConfig({
+  base,
+  plugins: [
+    vue(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.svg', 'icon.svg'],
+      manifest: {
+        name: 'Field Annotator — Kermap',
+        short_name: 'FieldAnnotator',
+        description:
+          'Consultation ortho/Nimbo hors ligne et logging d\'observations terrain',
+        theme_color: '#0f766e',
+        background_color: '#0b1220',
+        display: 'standalone',
+        orientation: 'any',
+        start_url: base,
+        scope: base,
+        icons: [
+          {
+            src: 'icon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any maskable',
+          },
+        ],
+      },
+      workbox: {
+        // Permet à MapLibre (worker) de fonctionner offline
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        navigateFallback: `${base}index.html`,
+        // Fichiers de tuiles volumineux : on autorise un grand cache
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        runtimeCaching: [
+          {
+            // Ortho IGN + services Géoplateforme (WMTS)
+            urlPattern: /^https:\/\/data\.geopf\.fr\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tiles-ign',
+              expiration: { maxEntries: 20000, maxAgeSeconds: 60 * 60 * 24 * 90 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // Flux Nimbo — ADAPTER l'hôte quand l'URL réelle est connue.
+            urlPattern: /^https:\/\/[^/]*nimbo[^/]*\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tiles-nimbo',
+              expiration: { maxEntries: 20000, maxAgeSeconds: 60 * 60 * 24 * 90 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
+      },
+      devOptions: {
+        enabled: false,
+      },
+    }),
+  ],
+})

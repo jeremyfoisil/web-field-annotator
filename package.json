@@ -1,0 +1,28 @@
+{
+  "name": "web-field-annotator",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "PWA terrain (Kermap) : ortho + flux Nimbo consultables hors ligne, logging de parcelles cadastrales",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "dexie": "^4.0.11",
+    "maplibre-gl": "^5.1.0",
+    "pinia": "^2.3.1",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@types/geojson": "^7946.0.15",
+    "@types/node": "^22.13.0",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "typescript": "~5.7.3",
+    "vite": "^6.1.0",
+    "vite-plugin-pwa": "^0.21.1",
+    "vue-tsc": "^2.2.0"
+  }
+}
