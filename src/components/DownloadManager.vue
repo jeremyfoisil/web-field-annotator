@@ -22,6 +22,9 @@ const emit = defineEmits<{
 const settings = useSettings()
 const offline = useOffline()
 
+// Volet rétractable (mobile) : clic sur le titre pour replier vers le bas.
+const collapsed = ref(false)
+
 // Zone enregistrée dont on affiche le contour sur la carte (clic sur sa ligne).
 const shownAreaId = ref<string | null>(null)
 
@@ -117,10 +120,17 @@ async function start() {
 </script>
 
 <template>
-  <aside class="dl-panel">
+  <aside class="dl-panel" :class="{ collapsed }">
     <div class="dl-head">
       <button class="back" @click="emit('close')" aria-label="Retour">←</button>
-      <h2>Zone hors ligne</h2>
+      <button
+        class="title-toggle"
+        :aria-expanded="!collapsed"
+        @click="collapsed = !collapsed"
+      >
+        <h2>Zone hors ligne</h2>
+        <span class="chevron" aria-hidden="true">{{ collapsed ? '▲' : '▼' }}</span>
+      </button>
     </div>
 
     <div class="dl-body">
@@ -251,11 +261,18 @@ async function start() {
   display: flex; align-items: center; gap: 8px;
   padding: 14px 14px 10px; border-bottom: 1px solid var(--border);
 }
-.dl-head h2 { margin: 0; font-size: 1rem; }
 .back {
   background: none; border: none; color: var(--text);
   font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0 4px;
 }
+.title-toggle {
+  flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  background: none; border: none; color: var(--text); cursor: pointer;
+  padding: 0; text-align: left;
+}
+.title-toggle h2 { margin: 0; font-size: 1rem; }
+/* Chevron : indicateur de repli, utile uniquement en bottom-sheet mobile. */
+.chevron { font-size: 0.7rem; color: var(--muted); display: none; }
 .dl-body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px; }
 .zoom-note { font-size: 0.78rem; color: var(--muted); margin: 0 0 10px; }
 .emprise-card {
@@ -317,4 +334,12 @@ input[type='text'] {
 .a-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
 .del { background: none; border: none; color: var(--muted); font-size: 1.3rem; cursor: pointer; }
 .del:hover { color: #f87171; }
+
+/* Bottom-sheet mobile : le titre replie/déplie le volet vers le bas, laissant
+   la carte visible pour ajuster le cadrage. */
+@media (max-width: 860px) {
+  .chevron { display: inline; }
+  .dl-panel.collapsed .dl-body { display: none; }
+  .dl-panel.collapsed .dl-head { border-bottom: none; }
+}
 </style>

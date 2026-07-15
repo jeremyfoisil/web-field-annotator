@@ -10,6 +10,31 @@ export interface DownloadProgress {
   message: string
 }
 
+/** Délai maximal par tuile : au-delà, on abandonne la requête et on passe. */
+const TILE_TIMEOUT_MS = 15000
+
+/**
+ * fetch d'une tuile borné dans le temps. Sur réseau mobile/cellulaire, une
+ * connexion peut « pendre » indéfiniment (ni résolue, ni rejetée) : sans timeout,
+ * le worker resterait bloqué sur `await` et tout le téléchargement se figerait
+ * avant la fin. On abandonne donc chaque requête après TILE_TIMEOUT_MS, tout en
+ * respectant l'annulation globale (bouton « Annuler »).
+ */
+async function fetchTile(url: string, signal: AbortSignal): Promise<void> {
+  const ctrl = new AbortController()
+  const onAbort = () => ctrl.abort()
+  if (signal.aborted) ctrl.abort()
+  else signal.addEventListener('abort', onAbort, { once: true })
+  const timer = setTimeout(() => ctrl.abort(), TILE_TIMEOUT_MS)
+  try {
+    // Le service worker (CacheFirst) intercepte et met en cache la réponse.
+    await fetch(url, { signal: ctrl.signal, mode: 'cors' })
+  } finally {
+    clearTimeout(timer)
+    signal.removeEventListener('abort', onAbort)
+  }
+}
+
 /** Télécharge (dans le cache SW) toutes les tuiles d'une couche pour une bbox. */
 async function downloadLayerTiles(
   layer: RasterLayerConfig,
@@ -24,12 +49,17 @@ async function downloadLayerTiles(
       if (signal.aborted) throw new DOMException('aborted', 'AbortError')
       const t = tiles[index++]
       const url = fillTemplate(layer.tiles[0], t)
-      try {
-        // Le service worker (CacheFirst) intercepte et met en cache la réponse.
-        await fetch(url, { signal, mode: 'cors' })
-      } catch (e) {
-        if ((e as Error).name === 'AbortError') throw e
-        // tuile hors couverture / erreur réseau ponctuelle → on continue
+      // Timeout / erreur réseau ponctuelle → une nouvelle tentative, puis on passe
+      // à la tuile suivante (mieux vaut un trou qu'un téléchargement figé).
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          await fetchTile(url, signal)
+          break
+        } catch {
+          // Annulation utilisateur (signal global) → on remonte pour stopper.
+          if (signal.aborted) throw new DOMException('aborted', 'AbortError')
+          // sinon (timeout / hors couverture) → retente puis continue
+        }
       }
       onTile()
     }
