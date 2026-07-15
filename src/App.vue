@@ -24,7 +24,6 @@ const showSidebar = ref(false)
 const online = ref(navigator.onLine)
 
 const dlBbox = ref<[number, number, number, number] | null>(null)
-const dlZoom = ref(12)
 
 function onOnline() { online.value = true }
 function onOffline() { online.value = false }
@@ -65,10 +64,34 @@ function closeDownload() {
 
 function openDownload() {
   dlBbox.value = mapRef.value?.getBounds() ?? null
-  dlZoom.value = mapRef.value?.getZoom() ?? 12
-  if (dlBbox.value) mapRef.value?.showEmprise(dlBbox.value)
   showDownload.value = true
-  showSidebar.value = false
+}
+
+// La zone active à télécharger = le cadrage courant (pas de détourage dédié) ;
+// on met seulement à jour les bornes pour recalculer dimensions et poids.
+function onBounds(bbox: [number, number, number, number]) {
+  if (!showDownload.value) return
+  dlBbox.value = bbox
+}
+
+// Affiche (ou masque) le contour d'une zone enregistrée et y cadre la carte.
+function onShowArea(bbox: [number, number, number, number] | null) {
+  if (bbox) {
+    mapRef.value?.showEmprise(bbox)
+    mapRef.value?.fitBbox(bbox)
+  } else {
+    mapRef.value?.clearEmprise()
+  }
+}
+
+function toggleSidebar() {
+  if (showDownload.value) {
+    // On quitte le mode téléchargement pour revenir à la liste d'observations.
+    closeDownload()
+    showSidebar.value = true
+    return
+  }
+  showSidebar.value = !showSidebar.value
 }
 </script>
 
@@ -102,7 +125,7 @@ function openDownload() {
         <span class="net" :class="online ? 'up' : 'down'">
           {{ online ? 'En ligne' : 'Hors ligne' }}
         </span>
-        <button class="chip" @click="showSidebar = !showSidebar">
+        <button class="chip" @click="toggleSidebar">
           ☰ {{ observations.items.length }}
         </button>
       </div>
@@ -110,10 +133,16 @@ function openDownload() {
 
     <main class="content">
       <div class="map-wrap">
-        <MapView ref="mapRef" @pick="onPick" />
+        <MapView ref="mapRef" @pick="onPick" @boundschange="onBounds" />
       </div>
-      <div class="sidebar-wrap" :class="{ open: showSidebar }">
-        <Sidebar @open-download="openDownload" />
+      <div class="sidebar-wrap" :class="{ open: showSidebar || showDownload, download: showDownload }">
+        <DownloadManager
+          v-if="showDownload"
+          :bbox="dlBbox"
+          @close="closeDownload"
+          @show-area="onShowArea"
+        />
+        <Sidebar v-else @open-download="openDownload" />
       </div>
     </main>
 
@@ -122,12 +151,6 @@ function openDownload() {
       :point="pendingPoint"
       @close="closeLog"
       @saved="onSaved"
-    />
-    <DownloadManager
-      v-if="showDownload"
-      :bbox="dlBbox"
-      :current-zoom="dlZoom"
-      @close="closeDownload"
     />
   </div>
 </template>
@@ -175,5 +198,14 @@ function openDownload() {
     box-shadow: -8px 0 30px rgba(0, 0, 0, 0.35);
   }
   .sidebar-wrap.open { transform: translateX(0); }
+  /* En mode téléchargement : bottom-sheet, le haut de la carte reste visible
+     et manipulable pour ajuster le cadrage (zoom/déplacement) en direct. */
+  .sidebar-wrap.download {
+    inset: auto 0 0 0; width: 100%; height: auto; max-height: 62vh;
+    transform: translateY(100%);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.35);
+  }
+  .sidebar-wrap.download.open { transform: translateY(0); }
 }
 </style>

@@ -8,7 +8,10 @@ import { useSettings } from '../stores/settings'
 import { useObservations } from '../stores/observations'
 import type { FeatureCollection } from 'geojson'
 
-const emit = defineEmits<{ pick: [lngLat: [number, number]] }>()
+const emit = defineEmits<{
+  pick: [lngLat: [number, number]]
+  boundschange: [bbox: [number, number, number, number]]
+}>()
 
 const settings = useSettings()
 const observations = useObservations()
@@ -185,6 +188,14 @@ onMounted(() => {
     if (map) zoom.value = map.getZoom()
   })
 
+  // Emprise « live » : à chaque fin de déplacement/zoom, on publie les bornes
+  // du cadrage courant (utilisé par le volet de téléchargement hors ligne).
+  map.on('moveend', () => {
+    if (!map) return
+    const b = map.getBounds()
+    emit('boundschange', [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()])
+  })
+
   map.on('click', (e) => {
     const lngLat: [number, number] = [e.lngLat.lng, e.lngLat.lat]
     setPending(lngLat)
@@ -252,6 +263,11 @@ defineExpose({
   },
   clearEmprise: () => {
     empriseSource()?.setData({ type: 'FeatureCollection', features: [] })
+  },
+  /** Cadre la carte sur une bbox (pour visualiser une zone enregistrée). */
+  fitBbox: (bbox: [number, number, number, number]) => {
+    const [w, s, e, n] = bbox
+    map?.fitBounds([[w, s], [e, n]], { padding: 40, duration: 500 })
   },
 })
 </script>
