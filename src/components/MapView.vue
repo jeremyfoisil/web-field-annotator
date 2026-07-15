@@ -15,6 +15,7 @@ const observations = useObservations()
 
 const container = ref<HTMLDivElement | null>(null)
 const geoError = ref<string | null>(null)
+const zoom = ref(INITIAL_VIEW.zoom)
 let map: maplibregl.Map | null = null
 let pendingMarker: maplibregl.Marker | null = null
 
@@ -180,6 +181,10 @@ onMounted(() => {
     }
   })
 
+  map.on('zoom', () => {
+    if (map) zoom.value = map.getZoom()
+  })
+
   map.on('click', (e) => {
     const lngLat: [number, number] = [e.lngLat.lng, e.lngLat.lat]
     setPending(lngLat)
@@ -253,6 +258,7 @@ defineExpose({
 
 <template>
   <div ref="container" class="map-root"></div>
+  <div class="zoom-badge">zoom&nbsp;: {{ zoom.toFixed(1) }}</div>
   <div v-if="geoError" class="geo-error" @click="geoError = null">
     {{ geoError }}
   </div>
@@ -262,6 +268,21 @@ defineExpose({
 .map-root {
   position: absolute;
   inset: 0;
+}
+.zoom-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(15, 23, 42, 0.6);
+  color: #fff;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  padding: 4px 7px;
+  border-radius: 6px;
+  z-index: 10;
+  pointer-events: none;
+  user-select: none;
 }
 .geo-error {
   position: absolute;
