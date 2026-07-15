@@ -13,6 +13,11 @@ export function buildStyle(visibleIds: string[]): StyleSpecification {
       type: 'geojson',
       data: { type: 'FeatureCollection', features: [] },
     },
+    // Rectangle de l'emprise à télécharger (mode offline)
+    emprise: {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features: [] },
+    },
   }
 
   for (const l of ALL_LAYERS) {
@@ -44,6 +49,19 @@ export function buildStyle(visibleIds: string[]): StyleSpecification {
     layers: [
       { id: 'bg', type: 'background', paint: { 'background-color': '#1e293b' } },
       ...rasterLayers,
+      // Emprise de téléchargement offline
+      {
+        id: 'emprise-fill',
+        type: 'fill',
+        source: 'emprise',
+        paint: { 'fill-color': '#f59e0b', 'fill-opacity': 0.12 },
+      },
+      {
+        id: 'emprise-line',
+        type: 'line',
+        source: 'emprise',
+        paint: { 'line-color': '#f59e0b', 'line-width': 2.5, 'line-dasharray': [2, 1] },
+      },
       // Points d'observation loggés
       {
         id: 'obs-point',

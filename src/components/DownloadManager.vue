@@ -38,6 +38,24 @@ const estimate = computed(() => {
   return { tiles, mb: estimateSizeMB(tiles) }
 })
 
+// Dimensions réelles de l'emprise (rectangle capturé à l'ouverture).
+const emprise = computed(() => {
+  if (!props.bbox) return null
+  const [w, s, e, n] = props.bbox
+  const midLat = (s + n) / 2
+  const kmPerDegLat = 111.32
+  const kmPerDegLng = 111.32 * Math.cos((midLat * Math.PI) / 180)
+  const width = (e - w) * kmPerDegLng
+  const height = (n - s) * kmPerDegLat
+  return {
+    width,
+    height,
+    area: width * height,
+    centerLat: midLat,
+    centerLng: (w + e) / 2,
+  }
+})
+
 const pct = computed(() => {
   const p = offline.progress
   if (!p || !p.tilesTotal) return 0
@@ -97,9 +115,21 @@ async function start() {
 
       <section class="new-area">
         <p class="lead">
-          Cadrez la carte sur la zone à consulter sur le terrain, puis téléchargez
-          les tuiles de l'emprise visible.
+          L'emprise = le rectangle orange sur la carte, càd le cadrage visible au
+          moment de l'ouverture. Recadrez la carte avant d'ouvrir ce panneau pour
+          la changer.
         </p>
+
+        <div v-if="emprise" class="emprise-card">
+          <span class="badge">Emprise à télécharger</span>
+          <div class="emprise-dims">
+            ≈ {{ emprise.width.toFixed(1) }} × {{ emprise.height.toFixed(1) }} km
+            <span class="area">({{ emprise.area.toFixed(1) }} km²)</span>
+          </div>
+          <div class="emprise-center">
+            centre {{ emprise.centerLat.toFixed(4) }}, {{ emprise.centerLng.toFixed(4) }}
+          </div>
+        </div>
 
         <label class="field">
           <span>Nom de la zone</span>
@@ -188,17 +218,36 @@ async function start() {
 <style scoped>
 .overlay {
   position: fixed; inset: 0; z-index: 60;
-  background: rgba(2, 6, 23, 0.6);
-  display: flex; align-items: center; justify-content: center;
+  /* Fond léger : on garde le rectangle d'emprise visible sur la carte. */
+  background: rgba(2, 6, 23, 0.25);
+  display: flex; align-items: flex-end; justify-content: center;
   padding: 12px;
 }
 .modal {
   background: var(--panel);
   width: min(560px, 100%);
-  max-height: 90vh; overflow-y: auto;
+  max-height: 78vh; overflow-y: auto;
   border-radius: 16px;
   border: 1px solid var(--border);
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
 }
+@media (min-width: 720px) {
+  .overlay { align-items: center; }
+}
+.emprise-card {
+  background: var(--panel-2);
+  border: 1px solid #b45309;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+.emprise-card .badge {
+  display: inline-block; font-size: 0.68rem; text-transform: uppercase;
+  letter-spacing: 0.05em; color: #f59e0b;
+}
+.emprise-dims { font-size: 1rem; font-weight: 600; margin-top: 2px; }
+.emprise-dims .area { color: var(--muted); font-weight: 400; font-size: 0.85rem; }
+.emprise-center { font-family: ui-monospace, monospace; font-size: 0.8rem; color: var(--muted); margin-top: 3px; }
 .modal-head {
   position: sticky; top: 0; background: var(--panel);
   display: flex; align-items: center; justify-content: space-between;

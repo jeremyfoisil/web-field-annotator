@@ -216,6 +216,10 @@ watch(() => observations.selectedId, () => {
   }
 })
 
+function empriseSource() {
+  return map?.getSource('emprise') as maplibregl.GeoJSONSource | undefined
+}
+
 defineExpose({
   clearPending: () => setPending(null),
   getBounds: (): [number, number, number, number] | null => {
@@ -224,6 +228,26 @@ defineExpose({
     return [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]
   },
   getZoom: () => (map ? Math.round(map.getZoom()) : 12),
+  /** Dessine le rectangle de l'emprise de téléchargement. */
+  showEmprise: (bbox: [number, number, number, number]) => {
+    const [w, s, e, n] = bbox
+    empriseSource()?.setData({
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'Polygon',
+            coordinates: [[[w, s], [e, s], [e, n], [w, n], [w, s]]],
+          },
+        },
+      ],
+    })
+  },
+  clearEmprise: () => {
+    empriseSource()?.setData({ type: 'FeatureCollection', features: [] })
+  },
 })
 </script>
 

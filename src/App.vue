@@ -58,9 +58,15 @@ function onSaved() {
   closeLog()
 }
 
+function closeDownload() {
+  showDownload.value = false
+  mapRef.value?.clearEmprise()
+}
+
 function openDownload() {
   dlBbox.value = mapRef.value?.getBounds() ?? null
   dlZoom.value = mapRef.value?.getZoom() ?? 12
+  if (dlBbox.value) mapRef.value?.showEmprise(dlBbox.value)
   showDownload.value = true
   showSidebar.value = false
 }
@@ -121,7 +127,7 @@ function openDownload() {
       v-if="showDownload"
       :bbox="dlBbox"
       :current-zoom="dlZoom"
-      @close="showDownload = false"
+      @close="closeDownload"
     />
   </div>
 </template>
