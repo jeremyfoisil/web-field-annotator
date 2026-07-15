@@ -86,10 +86,12 @@ export async function downloadArea(
   const area: OfflineArea = {
     id: newId(),
     label: opts.label,
-    bbox: opts.bbox,
+    // Copies « plates » : bbox/layerIds proviennent de refs Vue (Proxy) →
+    // IndexedDB ne peut pas cloner un Proxy.
+    bbox: [opts.bbox[0], opts.bbox[1], opts.bbox[2], opts.bbox[3]],
     minZoom: opts.minZoom,
     maxZoom: opts.maxZoom,
-    layerIds: opts.layerIds,
+    layerIds: [...opts.layerIds],
     tileCount: tilesTotal,
     createdAt: new Date().toISOString(),
   }

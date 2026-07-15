@@ -2,13 +2,10 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// NOTE offline : les tuiles (ortho IGN, flux Nimbo) et l'API cadastre sont mises
-// en cache par le service worker en stratégie CacheFirst. Le pré-téléchargement
-// d'une zone (voir src/lib/offline.ts) déclenche un fetch() de chaque tuile, ce
-// qui remplit ce même cache — donc hors ligne la carte s'affiche depuis le cache.
-//
-// Quand tu renseignes l'URL réelle du flux Nimbo dans src/config/layers.ts,
-// ajoute son hôte dans `tileRuntimeCaching` ci-dessous.
+// NOTE offline : les tuiles (ortho IGN) sont mises en cache par le service worker
+// en stratégie CacheFirst. Le pré-téléchargement d'une zone (voir src/lib/offline.ts)
+// déclenche un fetch() de chaque tuile, ce qui remplit ce même cache — donc hors
+// ligne la carte s'affiche depuis le cache.
 
 // GitHub Pages projet : le site est servi sous https://<org>.github.io/<repo>/
 const base = '/web-field-annotator/'
@@ -24,7 +21,7 @@ export default defineConfig({
         name: 'Field Annotator — Kermap',
         short_name: 'FieldAnnotator',
         description:
-          'Consultation ortho/Nimbo hors ligne et logging d\'observations terrain',
+          'Consultation ortho IGN hors ligne et logging d\'observations terrain',
         theme_color: '#0f766e',
         background_color: '#0b1220',
         display: 'standalone',
@@ -53,16 +50,6 @@ export default defineConfig({
             handler: 'CacheFirst',
             options: {
               cacheName: 'tiles-ign',
-              expiration: { maxEntries: 20000, maxAgeSeconds: 60 * 60 * 24 * 90 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            // Flux Nimbo — ADAPTER l'hôte quand l'URL réelle est connue.
-            urlPattern: /^https:\/\/[^/]*nimbo[^/]*\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'tiles-nimbo',
               expiration: { maxEntries: 20000, maxAgeSeconds: 60 * 60 * 24 * 90 },
               cacheableResponse: { statuses: [0, 200] },
             },

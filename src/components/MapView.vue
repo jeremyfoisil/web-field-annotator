@@ -14,6 +14,7 @@ const settings = useSettings()
 const observations = useObservations()
 
 const container = ref<HTMLDivElement | null>(null)
+const geoError = ref<string | null>(null)
 let map: maplibregl.Map | null = null
 let pendingMarker: maplibregl.Marker | null = null
 
@@ -104,6 +105,7 @@ function setupHeading(geolocate: maplibregl.GeolocateControl) {
       })
     }
     headingMarker.setLngLat(lngLat).addTo(map)
+    geoError.value = null
   })
 
   const hide = () => {
@@ -111,7 +113,17 @@ function setupHeading(geolocate: maplibregl.GeolocateControl) {
     hasHeading = false
   }
   geolocate.on('trackuserlocationend', hide)
-  geolocate.on('error', hide)
+  geolocate.on('error', (e: GeolocationPositionError) => {
+    hide()
+    if (e && e.code === 1) {
+      geoError.value =
+        "Localisation refusée. Autorise l'accès à la position pour ce site dans les réglages du navigateur."
+    } else if (e && e.code === 3) {
+      geoError.value = 'Localisation : délai dépassé. Réessaie à l\'extérieur / avec le GPS activé.'
+    } else {
+      geoError.value = 'Localisation indisponible sur cet appareil.'
+    }
+  })
 }
 
 function obsCollection(): FeatureCollection {
@@ -160,6 +172,12 @@ onMounted(() => {
 
   map.on('load', () => {
     refreshObservations()
+    // Localisation automatique au démarrage (le bouton « cible » reste dispo).
+    try {
+      geolocate.trigger()
+    } catch {
+      /* certains navigateurs exigent une interaction : le bouton prend le relais */
+    }
   })
 
   map.on('click', (e) => {
@@ -211,11 +229,29 @@ defineExpose({
 
 <template>
   <div ref="container" class="map-root"></div>
+  <div v-if="geoError" class="geo-error" @click="geoError = null">
+    {{ geoError }}
+  </div>
 </template>
 
 <style scoped>
 .map-root {
   position: absolute;
   inset: 0;
+}
+.geo-error {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  max-width: min(90%, 420px);
+  background: rgba(180, 83, 9, 0.95);
+  color: #fff;
+  font-size: 0.82rem;
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+  cursor: pointer;
 }
 </style>

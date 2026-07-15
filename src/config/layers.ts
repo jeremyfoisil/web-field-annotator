@@ -1,8 +1,6 @@
 // Configuration des couches raster (fonds de carte).
 //
 // Ortho IGN : Géoplateforme WMTS public (pas de clé nécessaire).
-// Nimbo : REMPLACER l'URL par le vrai endpoint XYZ/WMTS Kermap, et penser à
-//         ajouter l'hôte dans vite.config.ts (runtimeCaching) pour le cache offline.
 
 export interface RasterLayerConfig {
   id: string
@@ -32,18 +30,6 @@ export const RASTER_LAYERS: RasterLayerConfig[] = [
     attribution: '© IGN — Géoplateforme',
     offlineMaxZoom: 19,
     visibleByDefault: true,
-  },
-  {
-    // PLACEHOLDER — remplacer par le vrai flux Nimbo (Kermap).
-    id: 'nimbo',
-    label: 'Nimbo',
-    tiles: ['https://example.nimbo.invalid/tiles/{z}/{x}/{y}.png'],
-    tileSize: 256,
-    minzoom: 0,
-    maxzoom: 18,
-    attribution: '© Kermap — Nimbo',
-    offlineMaxZoom: 18,
-    visibleByDefault: false,
   },
 ]
 
