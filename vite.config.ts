@@ -10,8 +10,11 @@ import { VitePWA } from 'vite-plugin-pwa'
 // Quand tu renseignes l'URL réelle du flux Nimbo dans src/config/layers.ts,
 // ajoute son hôte dans `tileRuntimeCaching` ci-dessous.
 
-// GitHub Pages projet : le site est servi sous https://<org>.github.io/<repo>/
-const base = '/web-field-annotator/'
+// Base path configurable via l'env :
+//  - Prod (domaine dédié, servi à la racine par nginx) : '/' (défaut)
+//  - GitHub Pages projet (https://<org>.github.io/<repo>/) : '/web-field-annotator/'
+// Définir VITE_BASE au moment du build pour surcharger.
+const base = process.env.VITE_BASE ?? '/'
 
 export default defineConfig({
   base,
