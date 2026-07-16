@@ -5,7 +5,7 @@
   "type": "module",
   "description": "PWA terrain (Kermap) : ortho + flux Nimbo consultables hors ligne, logging de parcelles cadastrales",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit"
