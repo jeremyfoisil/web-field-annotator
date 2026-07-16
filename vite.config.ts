@@ -7,8 +7,11 @@ import { VitePWA } from 'vite-plugin-pwa'
 // déclenche un fetch() de chaque tuile, ce qui remplit ce même cache — donc hors
 // ligne la carte s'affiche depuis le cache.
 
-// GitHub Pages projet : le site est servi sous https://<org>.github.io/<repo>/
-const base = '/web-field-annotator/'
+// Base path configurable via l'env :
+//  - Prod (domaine dédié, servi à la racine par nginx) : '/' (défaut)
+//  - GitHub Pages projet (https://<org>.github.io/<repo>/) : '/web-field-annotator/'
+// Définir VITE_BASE au moment du build pour surcharger.
+const base = process.env.VITE_BASE ?? '/'
 
 export default defineConfig({
   base,
