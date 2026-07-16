@@ -9,6 +9,8 @@ export interface Observation {
   observateur: string
   /** Horodatage ISO 8601 (date + heure). */
   loggedAt: string
+  /** Identifiant de la parcelle saisi sur le terrain (libre, optionnel). */
+  parcelleId: string
   note: string
 }
 
@@ -42,6 +44,20 @@ class FieldDB extends Dexie {
       parcelles: null,
       offlineAreas: 'id, createdAt',
     })
+    // v3 : identifiant de parcelle saisi à la main sur l'observation.
+    this.version(3)
+      .stores({
+        observations: 'id, observateur, loggedAt, parcelleId',
+        offlineAreas: 'id, createdAt',
+      })
+      .upgrade((tx) =>
+        tx
+          .table<Observation>('observations')
+          .toCollection()
+          .modify((o) => {
+            o.parcelleId = ''
+          }),
+      )
   }
 }
 

@@ -25,6 +25,7 @@ export function exportGeoJSON(observations: Observation[]) {
       id: o.id,
       observateur: o.observateur,
       loggedAt: o.loggedAt,
+      parcelleId: o.parcelleId,
       note: o.note,
       lng: o.point[0],
       lat: o.point[1],
@@ -40,9 +41,9 @@ function csvCell(v: unknown): string {
 }
 
 export function exportCSV(observations: Observation[]) {
-  const headers = ['id', 'observateur', 'loggedAt', 'note', 'lng', 'lat']
+  const headers = ['id', 'observateur', 'loggedAt', 'parcelleId', 'note', 'lng', 'lat']
   const rows = observations.map((o) =>
-    [o.id, o.observateur, o.loggedAt, o.note, o.point[0], o.point[1]]
+    [o.id, o.observateur, o.loggedAt, o.parcelleId, o.note, o.point[0], o.point[1]]
       .map(csvCell)
       .join(';'),
   )

@@ -20,6 +20,7 @@ export const useObservations = defineStore('observations', () => {
   async function logAtPoint(
     lngLat: [number, number],
     observateur: string,
+    parcelleId = '',
     note = '',
   ): Promise<Observation> {
     const obs: Observation = {
@@ -28,6 +29,7 @@ export const useObservations = defineStore('observations', () => {
       point: [lngLat[0], lngLat[1]],
       observateur,
       loggedAt: new Date().toISOString(),
+      parcelleId,
       note,
     }
     await db.observations.put(obs)

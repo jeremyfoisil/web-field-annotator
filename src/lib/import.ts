@@ -77,6 +77,7 @@ export function parseObservationsFromGeoJSON(
       point,
       observateur: str(p.observateur) ?? defaults.observateur,
       loggedAt: str(p.loggedAt) ?? defaults.loggedAt,
+      parcelleId: str(p.parcelleId) ?? '',
       note: str(p.note) ?? '',
     })
   }

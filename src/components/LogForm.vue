@@ -9,6 +9,7 @@ const emit = defineEmits<{ close: []; saved: [] }>()
 const settings = useSettings()
 const observations = useObservations()
 
+const parcelleId = ref('')
 const note = ref('')
 const saving = ref(false)
 const error = ref<string | null>(null)
@@ -24,6 +25,7 @@ async function save() {
     await observations.logAtPoint(
       props.point,
       settings.observateur.trim(),
+      parcelleId.value.trim(),
       note.value.trim(),
     )
     emit('saved')
@@ -48,6 +50,11 @@ async function save() {
       <label class="field">
         <span>Ingénieur en charge</span>
         <input v-model="settings.observateur" type="text" placeholder="Nom Prénom" />
+      </label>
+
+      <label class="field">
+        <span>Identifiant parcelle</span>
+        <input v-model="parcelleId" type="text" placeholder="Ex. AB-0123" />
       </label>
 
       <label class="field">

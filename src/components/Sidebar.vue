@@ -44,8 +44,8 @@ function fmt(iso: string): string {
   })
 }
 
-function title(o: { point: [number, number] }): string {
-  return `${o.point[1].toFixed(5)}, ${o.point[0].toFixed(5)}`
+function title(o: { point: [number, number]; parcelleId: string }): string {
+  return o.parcelleId || `${o.point[1].toFixed(5)}, ${o.point[0].toFixed(5)}`
 }
 </script>
 
